@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import words from "../data/words_complete.json";
 
 type Difficulty =
@@ -12,10 +12,27 @@ interface Word {
     word: string;
     difficulty: Difficulty;
     definition: string;
+    example: string
 }
 
 export default function SpellingBee() {
     const [currentWord, setCurrentWord] = useState<Word | null>(null);
+
+    const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+    useEffect(() => {
+        function loadVoices() {
+            setVoices(window.speechSynthesis.getVoices());
+        }
+
+        loadVoices();
+
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+
+        return () => {
+            window.speechSynthesis.onvoiceschanged = null;
+        };
+    }, []);
 
     function getRandomWord(difficulty: Difficulty) {
         const filtered = (words as Word[]).filter(
@@ -35,16 +52,42 @@ export default function SpellingBee() {
         setCurrentWord(random);
     }
 
+    function speakWord(word: string) {
+        const utterance = new SpeechSynthesisUtterance(word);
+
+        utterance.lang = "en-US";
+        utterance.rate = 0.8;
+
+        // Prefer a natural English voice if available
+        const preferredVoice =
+            voices.find(v => v.name.includes("Google US English")) ||
+            voices.find(v => v.name.includes("Microsoft Aria")) ||
+            voices.find(v => v.name.includes("Alex")) ||
+            voices.find(v => v.lang === "en-US");
+
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
+
     return (
         <div className="page">
 
             <div className="wordContainer">
+                <button onClick={() => currentWord && speakWord(currentWord.word)}>
+                    🔊 Hear Word
+                </button>
 
                 {currentWord ? (
                     <>
                         <h1>{currentWord.word}</h1>
 
                         <p>Definition: {currentWord.definition}</p>
+
+                        <p>Example: {currentWord.example}</p>
                     </>
                 ) : (
                     <h2>Select a difficulty</h2>
@@ -86,6 +129,6 @@ export default function SpellingBee() {
 
             </div>
 
-        </div>
+        </div >
     );
 }
