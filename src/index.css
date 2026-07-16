@@ -1,6 +1,6 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
+  --text: #1f2937;
+  --text-h: #111827;
   --bg: #fff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
@@ -32,9 +32,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
+    --text: #1f2937;
+    --text-h: #111827;
+    --bg: rgb(86, 145, 90);
     --border: #2e303a;
     --code-bg: #1f2028;
     --accent: #c084fc;
@@ -51,11 +51,11 @@
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  min-height: 100svh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -63,6 +63,34 @@
 
 body {
   margin: 0;
+  background: var(--bg);
+}
+
+.page.rainbow {
+  background: linear-gradient(120deg,
+      #134e5e,
+      #71b280,
+      #2ecc71,
+      #27ae60,
+      #16a085,
+      #1abc9c);
+
+  background-size: 200% 200%;
+  animation: rainbowBreath 30s ease-in-out infinite;
+}
+
+@keyframes rainbowBreath {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+    filter: saturate(100%);
+  }
+
+  50% {
+    background-position: 100% 50%;
+    filter: saturate(140%);
+  }
 }
 
 h1,
@@ -73,7 +101,7 @@ h2 {
 }
 
 h1 {
-  font-size: 56px;
+  font-size: clamp(36px, 5vw, 72px);
   letter-spacing: -1.68px;
   margin: 32px 0;
 
@@ -115,46 +143,104 @@ code {
 
 .page {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100svh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
 }
-
 
 .backgroundImages {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  position: relative;
+  z-index: 1;
+  margin-top: 20vh;
+  width: min(90%, 900px);
 }
 
-
-.floatingImage {
-  position: absolute;
-  left: -100px;
-  width: 70px;
-  height: 70px;
-  object-fit: contain;
-
-  opacity: 0.4;
-  pointer-events: none;
-
-  animation: moveAcross linear infinite;
-}
-
-
-.wordContainer,
-.buttonBar {
+.wordContainer {
   position: relative;
   z-index: 1;
 }
 
+.wordContainer p {
+  max-width: 900px;
+  margin: 15px auto;
+}
 
-@keyframes moveAcross {
-  from {
-    transform: translateX(-150px) rotate(0deg);
-  }
+.buttonBar {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  position: absolute;
+  bottom: 40px;
+  width: 100%;
+  z-index: 2;
+}
 
-  to {
-    transform: translateX(120vw) rotate(360deg);
-  }
+
+.buttonBar button {
+  font-size: clamp(14px, 2vw, 24px);
+  padding: 12px 24px;
+}
+
+.floatingContainer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.floatingImage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: clamp(50px, 8vw, 140px);
+  height: clamp(50px, 8vw, 140px);
+  object-fit: contain;
+  opacity: 1;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.imageToggleButton {
+  font-size: 12px;
+  padding: 2px 6px;
+
+  min-width: unset;
+  min-height: unset;
+
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.settingsButtons {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+
+  z-index: 3;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settingsButtons button {
+  font-size: 12px;
+  padding: 2px 6px;
+
+  min-width: unset;
+  min-height: unset;
+
+  border-radius: 6px;
+  cursor: pointer;
 }
