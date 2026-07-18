@@ -11,9 +11,12 @@ type Difficulty =
 
 interface Word {
     word: string;
+    frequency?: number;
     difficulty: Difficulty;
     definition: string;
-    example: string
+    example: string;
+    partOfSpeech?: string;
+    languagesOfOrigin?: string[];
 }
 
 export default function SpellingBee() {
@@ -68,8 +71,10 @@ export default function SpellingBee() {
         setCurrentWord(random);
     }
 
-    function speakWord(word: string) {
-        const utterance = new SpeechSynthesisUtterance(word);
+    function speak(text: string) {
+        if (!text) return;
+
+        const utterance = new SpeechSynthesisUtterance(text);
 
         utterance.lang = "en-US";
         utterance.rate = 0.8;
@@ -90,6 +95,23 @@ export default function SpellingBee() {
         const regex = new RegExp(`\\b${escapedWord}\\b`, "i");
 
         return regex.test(word.example);
+    }
+
+    function difficultySlug(difficulty: Difficulty) {
+        return difficulty.toLowerCase().replace(/\s+/g, "-");
+    }
+
+    function renderExampleWithBold(word: Word) {
+        const escapedWord = word.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`(\\b${escapedWord}\\b)`, "ig");
+
+        return word.example.split(regex).map((part, i) =>
+            part.toLowerCase() === word.word.toLowerCase() ? (
+                <strong key={i}>{part}</strong>
+            ) : (
+                <span key={i}>{part}</span>
+            )
+        );
     }
 
     return (
@@ -140,26 +162,88 @@ export default function SpellingBee() {
             </label>
 
             <div className="wordContainer">
-                <button onClick={() => currentWord && speakWord(currentWord.word)}>
-                    🔊 Hear Word
-                </button>
-
                 {currentWord ? (
-                    <>
-                        <h1>{currentWord.word}</h1>
+                    <div className="wordCard">
+                        <span
+                            className={`difficultyBadge ${difficultySlug(
+                                currentWord.difficulty
+                            )}`}
+                        >
+                            {currentWord.difficulty}
+                        </span>
 
-                        <p>Definition: {currentWord.definition}</p>
+                        <h1 className="wordHeading">
+                            <button
+                                className="speakLine wordButton"
+                                aria-label={`Hear the word ${currentWord.word}`}
+                                onClick={() => speak(currentWord.word)}
+                            >
+                                <span className="wordText">{currentWord.word}</span>
+                                <span className="hearIcon" aria-hidden="true">🔊</span>
+                            </button>
+                        </h1>
+
+                        {(currentWord.partOfSpeech ||
+                            (currentWord.languagesOfOrigin &&
+                                currentWord.languagesOfOrigin.length > 0)) && (
+                            <div className="metaRow">
+                                {currentWord.partOfSpeech && (
+                                    <button
+                                        className="speakLine metaButton"
+                                        aria-label="Hear the part of speech"
+                                        onClick={() => speak(currentWord.partOfSpeech!)}
+                                    >
+                                        <em>{currentWord.partOfSpeech}</em>
+                                        <span className="hearIcon" aria-hidden="true">🔊</span>
+                                    </button>
+                                )}
+
+                                {currentWord.languagesOfOrigin &&
+                                    currentWord.languagesOfOrigin.length > 0 && (
+                                        <button
+                                            className="speakLine metaButton"
+                                            aria-label="Hear the languages of origin"
+                                            onClick={() =>
+                                                speak(
+                                                    "From " +
+                                                    currentWord.languagesOfOrigin!.join(", ")
+                                                )
+                                            }
+                                        >
+                                            from {currentWord.languagesOfOrigin.join(", ")}
+                                            <span className="hearIcon" aria-hidden="true">🔊</span>
+                                        </button>
+                                    )}
+                            </div>
+                        )}
+
+                        <button
+                            className="speakLine definitionButton"
+                            aria-label="Hear the definition"
+                            onClick={() => speak(currentWord.definition)}
+                        >
+                            <span>
+                                <strong>Definition:</strong> {currentWord.definition}
+                            </span>
+                            <span className="hearIcon" aria-hidden="true">🔊</span>
+                        </button>
 
                         {shouldShowExample(currentWord) && (
-                            <p>Example: {currentWord.example}</p>
+                            <button
+                                className="speakLine exampleButton"
+                                aria-label="Hear the example sentence"
+                                onClick={() => speak(currentWord.example)}
+                            >
+                                <span>“{renderExampleWithBold(currentWord)}”</span>
+                                <span className="hearIcon" aria-hidden="true">🔊</span>
+                            </button>
                         )}
-                    </>
+                    </div>
                 ) : (
                     <h2>Select a difficulty</h2>
                 )}
 
             </div>
-
 
             <div className="buttonBar">
 
