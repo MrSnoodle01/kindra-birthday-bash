@@ -83,6 +83,15 @@ export default function SpellingBee() {
         window.speechSynthesis.speak(utterance);
     }
 
+    function shouldShowExample(word: Word) {
+        if (!word.example) return false;
+
+        const escapedWord = word.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`\\b${escapedWord}\\b`, "i");
+
+        return regex.test(word.example);
+    }
+
     return (
         <div className={`page ${showRainbow ? "rainbow" : ""}`}>
 
@@ -141,7 +150,9 @@ export default function SpellingBee() {
 
                         <p>Definition: {currentWord.definition}</p>
 
-                        <p>Example: {currentWord.example}</p>
+                        {shouldShowExample(currentWord) && (
+                            <p>Example: {currentWord.example}</p>
+                        )}
                     </>
                 ) : (
                     <h2>Select a difficulty</h2>
