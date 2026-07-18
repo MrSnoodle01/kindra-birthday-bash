@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import words from "../data/words_complete.json";
+import FloatingImages from "../components/FloatingImages";
 
 type Difficulty =
     | "Very Easy"
@@ -15,42 +16,29 @@ interface Word {
     example: string
 }
 
-const sleepyImages = [
-    "/sleepy/20250419_185238.jpg",
-    "/sleepy/IMG_1106.jpg",
-    "/sleepy/IMG_1310.jpg",
-    "/sleepy/IMG_1524.jpg",
-    "/sleepy/IMG_2660.jpg",
-    "/sleepy/IMG_4159.jpg",
-    "/sleepy/IMG_4302.jpg",
-    "/sleepy/IMG_5133.jpg",
-    "/sleepy/IMG_6448.jpg",
-    "/sleepy/IMG_6581.jpg",
-    "/sleepy/IMG_8277.jpg",
-    "/sleepy/IMG_8330.jpg",
-    "/sleepy/IMG_8445.jpg",
-    "/sleepy/IMG_8446.jpg",
-    "/sleepy/IMG_8563.jpg",
-    "/sleepy/IMG_9998.jpg",
-]
-
 export default function SpellingBee() {
     const [currentWord, setCurrentWord] = useState<Word | null>(null);
+    const [showImages, setShowImages] = useState(true);
+    const [showRainbow, setShowRainbow] = useState(true);
+    const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
 
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
-    const [imageSettings] = useState(() =>
-        sleepyImages.map(() => ({
-            top: Math.random() * 90,
-            left: Math.random() * 90,
-            duration: 8 + Math.random() * 10,
-            delay: Math.random() * 5,
-        }))
-    );
-
     useEffect(() => {
         function loadVoices() {
-            setVoices(window.speechSynthesis.getVoices());
+            const availableVoices = window.speechSynthesis.getVoices();
+
+            setVoices(availableVoices);
+
+            if (!selectedVoice) {
+                const defaultVoice =
+                    availableVoices.find(v => v.name.includes("Google US English")) ||
+                    availableVoices.find(v => v.name.includes("Microsoft Aria")) ||
+                    availableVoices.find(v => v.lang === "en-US") ||
+                    availableVoices[0];
+
+                setSelectedVoice(defaultVoice);
+            }
         }
 
         loadVoices();
@@ -60,7 +48,7 @@ export default function SpellingBee() {
         return () => {
             window.speechSynthesis.onvoiceschanged = null;
         };
-    }, []);
+    }, [selectedVoice]);
 
     function getRandomWord(difficulty: Difficulty) {
         const filtered = (words as Word[]).filter(
@@ -87,37 +75,69 @@ export default function SpellingBee() {
         utterance.rate = 0.8;
 
         // Prefer a natural English voice if available
-        const preferredVoice =
-            voices.find(v => v.name.includes("Google US English")) ||
-            voices.find(v => v.name.includes("Microsoft Aria")) ||
-            voices.find(v => v.name.includes("Alex")) ||
-            voices.find(v => v.lang === "en-US");
-
-        if (preferredVoice) {
-            utterance.voice = preferredVoice;
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
         }
 
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
     }
 
-    return (
-        <div className="page">
+    function shouldShowExample(word: Word) {
+        if (!word.example) return false;
 
-            <div className="backgroundImages">
-                {sleepyImages.map((image, index) => (
-                    <img
-                        key={image}
-                        className="floatingImage"
-                        src={image}
-                        style={{
-                            top: `${imageSettings[index].top}%`,
-                            animationDuration: `${imageSettings[index].duration}s`,
-                            animationDelay: `${imageSettings[index].delay}s`,
-                        }}
-                    />
-                ))}
+        const escapedWord = word.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`\\b${escapedWord}\\b`, "i");
+
+        return regex.test(word.example);
+    }
+
+    return (
+        <div className={`page ${showRainbow ? "rainbow" : ""}`}>
+
+            {showImages && <FloatingImages />}
+
+
+            <div className="settingsButtons">
+                <button
+                    className="imageToggleButton"
+                    onClick={() => setShowImages(!showImages)}
+                >
+                    {showImages ? "Disable Kindra" : "Enable Kindra"}
+                </button>
+
+                <button
+                    className="rainbowToggleButton"
+                    onClick={() => setShowRainbow(!showRainbow)}
+                >
+                    {showRainbow ? "Disable Rainbow" : "Enable Rainbow"}
+                </button>
             </div>
+
+            <label>
+                Voice:
+                <select
+                    value={selectedVoice?.name || ""}
+                    onChange={(e) => {
+                        const voice = voices.find(
+                            v => v.name === e.target.value
+                        );
+
+                        if (voice) {
+                            setSelectedVoice(voice);
+                        }
+                    }}
+                >
+                    {voices.map((voice) => (
+                        <option
+                            key={voice.name}
+                            value={voice.name}
+                        >
+                            {voice.name} ({voice.lang})
+                        </option>
+                    ))}
+                </select>
+            </label>
 
             <div className="wordContainer">
                 <button onClick={() => currentWord && speakWord(currentWord.word)}>
@@ -130,13 +150,16 @@ export default function SpellingBee() {
 
                         <p>Definition: {currentWord.definition}</p>
 
-                        <p>Example: {currentWord.example}</p>
+                        {shouldShowExample(currentWord) && (
+                            <p>Example: {currentWord.example}</p>
+                        )}
                     </>
                 ) : (
                     <h2>Select a difficulty</h2>
                 )}
 
             </div>
+
 
             <div className="buttonBar">
 
