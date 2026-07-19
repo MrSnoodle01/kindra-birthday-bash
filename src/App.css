@@ -204,17 +204,142 @@
   text-align: center;
 }
 
-.wordContainer h1 {
-  margin: 0 0 20px 0;
-  line-height: 1.2;
-  font-size: 4rem
+.wordCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 760px;
+  width: min(92vw, 760px);
+  box-sizing: border-box;
+  padding: 52px 40px 44px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 45px -12px rgba(0, 0, 0, 0.4);
+  color: #1f2937;
 }
 
-.wordContainer p {
+/* Difficulty badge in the top corner of the card */
+.difficultyBadge {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.difficultyBadge.very-easy { background: #22c55e; }
+.difficultyBadge.easy      { background: #16a34a; }
+.difficultyBadge.medium    { background: #d97706; }
+.difficultyBadge.hard      { background: #ea580c; }
+.difficultyBadge.very-hard { background: #dc2626; }
+
+/* Each line is a button you can click anywhere to hear it */
+.speakLine {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 14px;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.speakLine:hover {
+  background: rgba(124, 46, 207, 0.09);
+}
+
+.speakLine:focus-visible {
+  outline: 2px solid rgba(124, 46, 207, 0.6);
+  outline-offset: 2px;
+}
+
+.hearIcon {
+  font-size: 0.62em;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.speakLine:hover .hearIcon,
+.speakLine:focus-visible .hearIcon {
+  opacity: 0.85;
+}
+
+.wordHeading {
   margin: 0;
-  max-width: 900px;
-  font-size: 1.5rem;
-  padding: 10px
+  line-height: 1.1;
+}
+
+.wordButton {
+  font-size: 4rem;
+  padding: 6px 18px;
+}
+
+.wordButton .wordText {
+  color: #7c2ecf;
+  letter-spacing: 0.5px;
+}
+
+.wordButton .hearIcon {
+  font-size: 0.32em;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 0;
+  font-size: 1.2rem;
+  color: #4b5563;
+}
+
+.metaButton em {
+  font-style: italic;
+  color: #374151;
+}
+
+.definitionButton,
+.exampleButton {
+  align-self: stretch;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: space-between;
+  max-width: 660px;
+  font-size: 1.35rem;
+  line-height: 1.45;
+}
+
+.definitionButton strong {
+  color: #7c2ecf;
+}
+
+.exampleButton {
+  font-style: italic;
+  color: #374151;
+}
+
+.exampleButton strong {
+  font-style: italic;
+  font-weight: 800;
+  color: #1f2937;
 }
 
 .buttonBar {
